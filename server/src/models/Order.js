@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
-const User = require('./User');
 
 const Order = sequelize.define(
   'Order',
@@ -13,10 +12,6 @@ const Order = sequelize.define(
     userId: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references: {
-        model: User,
-        key: 'id',
-      },
     },
     items: {
       type: DataTypes.JSON,
@@ -73,7 +68,5 @@ const Order = sequelize.define(
     ],
   }
 );
-
-Order.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = Order;

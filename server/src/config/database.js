@@ -8,18 +8,23 @@ const sequelize = new Sequelize(
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'postgres',
-    logging: process.env.NODE_ENV === 'development' ? console.log : false,
+    logging: process.env.NODE_ENV === 'development' ? false : false,
   }
 );
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('PostgreSQL Connected');
+    console.log('✓ PostgreSQL Connected');
+    
+    // Load and define associations
+    const { defineAssociations } = require('../models/index');
+    defineAssociations();
+    console.log('✓ Model associations defined');
     
     // Sync models with database
     await sequelize.sync({ alter: true });
-    console.log('Database synced');
+    console.log('✓ Database synced');
     
     return true;
   } catch (error) {

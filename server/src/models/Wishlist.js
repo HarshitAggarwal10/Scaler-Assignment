@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
-const User = require('./User');
 
 const Wishlist = sequelize.define(
   'Wishlist',
@@ -14,10 +13,6 @@ const Wishlist = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,
-      references: {
-        model: User,
-        key: 'id',
-      },
     },
     items: {
       type: DataTypes.JSON,
@@ -33,7 +28,5 @@ const Wishlist = sequelize.define(
     indexes: [{ fields: ['userId'] }],
   }
 );
-
-Wishlist.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = Wishlist;
