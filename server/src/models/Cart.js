@@ -1,48 +1,43 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const User = require('./User');
 
-const cartSchema = new mongoose.Schema(
+const Cart = sequelize.define(
+  'Cart',
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      unique: true,
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    items: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-          required: true,
-        },
-        quantity: {
-          type: Number,
-          required: true,
-          min: 1,
-          default: 1,
-        },
-        price: Number,
-        addedAt: {
-          type: Date,
-          default: Date.now,
-        },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true,
+      references: {
+        model: User,
+        key: 'id',
       },
-    ],
+    },
+    items: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
     totalPrice: {
-      type: Number,
-      default: 0,
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
     },
     updatedAt: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    collection: 'carts',
+    timestamps: false,
+    indexes: [{ fields: ['userId'] }],
   }
 );
 
-// Index for better query performance
-cartSchema.index({ user: 1 });
+Cart.belongsTo(User, { foreignKey: 'userId' });
 
-module.exports = mongoose.model('Cart', cartSchema);
+module.exports = Cart;

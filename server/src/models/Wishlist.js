@@ -1,36 +1,39 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const User = require('./User');
 
-const wishlistSchema = new mongoose.Schema(
+const Wishlist = sequelize.define(
+  'Wishlist',
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      unique: true,
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    items: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-        },
-        addedAt: {
-          type: Date,
-          default: Date.now,
-        },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true,
+      references: {
+        model: User,
+        key: 'id',
       },
-    ],
+    },
+    items: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
     updatedAt: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    collection: 'wishlists',
+    timestamps: false,
+    indexes: [{ fields: ['userId'] }],
   }
 );
 
-// Index for better query performance
-wishlistSchema.index({ user: 1 });
+Wishlist.belongsTo(User, { foreignKey: 'userId' });
 
-module.exports = mongoose.model('Wishlist', wishlistSchema);
+module.exports = Wishlist;

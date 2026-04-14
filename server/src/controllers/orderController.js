@@ -1,6 +1,7 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const User = require('../models/User');
 const { sendOrderConfirmation } = require('../utils/emailService');
 
 exports.createOrder = async (req, res) => {
@@ -14,22 +15,28 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    const cart = await Cart.findOne({ where: { userId: req.user.id } });
 
-    if (!cart || cart.items.length === 0) {
+    if (!cart || !cart.items || cart.items.length === 0) {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
-    const orderItems = cart.items.map((item) => ({
-      product: item.product._id,
-      quantity: item.quantity,
-      price: item.product.price,
-      title: item.product.title,
-      image: item.product.image,
-    }));
+    const orderItems = [];
+    for (const item of cart.items) {
+      const product = await Product.findByPk(item.productId);
+      if (product) {
+        orderItems.push({
+          productId: product.id,
+          quantity: item.quantity,
+          price: product.price,
+          title: product.title,
+          image: product.image,
+        });
+      }
+    }
 
-    const subtotal = cart.items.reduce(
-      (total, item) => total + item.product.price * item.quantity,
+    const subtotal = orderItems.reduce(
+      (total, item) => total + item.price * item.quantity,
       0
     );
 
@@ -38,7 +45,7 @@ exports.createOrder = async (req, res) => {
     const totalPrice = subtotal + tax + shippingCost;
 
     const order = await Order.create({
-      user: req.user._id,
+      userId: req.user.id,
       items: orderItems,
       shippingAddress,
       subtotal,
@@ -51,20 +58,20 @@ exports.createOrder = async (req, res) => {
     });
 
     // Clear cart
-    await Cart.updateOne({ user: req.user._id }, { items: [], totalPrice: 0 });
+    await cart.update({ items: [], totalPrice: 0 });
 
     // Update product stock
     for (let item of orderItems) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        { $inc: { stock: -item.quantity } },
-        { new: true }
-      );
+      const product = await Product.findByPk(item.productId);
+      if (product) {
+        await product.update({ stock: product.stock - item.quantity });
+      }
     }
 
     // Send confirmation email
+    const user = await User.findByPk(req.user.id);
     try {
-      await sendOrderConfirmation(req.user.email, req.user, order);
+      await sendOrderConfirmation(user.email, user, order);
     } catch (err) {
       console.log('Email not sent, but order created');
     }
@@ -81,9 +88,10 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrderHistory = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id })
-      .populate('items.product')
-      .sort({ createdAt: -1 });
+    const orders = await Order.findAll({
+      where: { userId: req.user.id },
+      order: [['createdAt', 'DESC']],
+    });
 
     res.status(200).json({
       success: true,
@@ -97,14 +105,14 @@ exports.getOrderHistory = async (req, res) => {
 
 exports.getOrderById = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('items.product');
+    const order = await Order.findByPk(req.params.id);
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
     // Check if user owns this order
-    if (order.user.toString() !== req.user._id.toString()) {
+    if (order.userId !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to view this order',
@@ -122,13 +130,13 @@ exports.getOrderById = async (req, res) => {
 
 exports.cancelOrder = async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findByPk(req.params.id);
 
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    if (order.user.toString() !== req.user._id.toString()) {
+    if (order.userId !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to cancel this order',
@@ -142,16 +150,14 @@ exports.cancelOrder = async (req, res) => {
       });
     }
 
-    order.orderStatus = 'cancelled';
-    await order.save();
+    await order.update({ orderStatus: 'cancelled' });
 
     // Restore stock
-    for (let item of order.items) {
-      await Product.findByIdAndUpdate(
-        item.product,
-        { $inc: { stock: item.quantity } },
-        { new: true }
-      );
+    for (let item of order.items || []) {
+      const product = await Product.findByPk(item.productId);
+      if (product) {
+        await product.update({ stock: product.stock + item.quantity });
+      }
     }
 
     res.status(200).json({

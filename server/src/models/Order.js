@@ -1,104 +1,79 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+const User = require('./User');
 
-const orderSchema = new mongoose.Schema(
+const Order = sequelize.define(
+  'Order',
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
     },
-    items: [
-      {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Product',
-        },
-        quantity: Number,
-        price: Number,
-        title: String,
-        image: String,
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
       },
-    ],
+    },
+    items: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
     shippingAddress: {
-      name: {
-        type: String,
-        required: true,
-      },
-      email: String,
-      phone: {
-        type: String,
-        required: true,
-      },
-      street: {
-        type: String,
-        required: true,
-      },
-      city: {
-        type: String,
-        required: true,
-      },
-      state: {
-        type: String,
-        required: true,
-      },
-      zipCode: {
-        type: String,
-        required: true,
-      },
-      country: {
-        type: String,
-        default: 'India',
-      },
+      type: DataTypes.JSON,
+      allowNull: false,
     },
     subtotal: {
-      type: Number,
-      required: true,
+      type: DataTypes.FLOAT,
+      allowNull: false,
     },
     shippingCost: {
-      type: Number,
-      default: 0,
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
     },
     tax: {
-      type: Number,
-      default: 0,
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
     },
     totalPrice: {
-      type: Number,
-      required: true,
+      type: DataTypes.FLOAT,
+      allowNull: false,
     },
     paymentMethod: {
-      type: String,
-      enum: ['credit_card', 'debit_card', 'upi', 'net_banking'],
-      default: 'upi',
+      type: DataTypes.ENUM('credit_card', 'debit_card', 'upi', 'net_banking'),
+      defaultValue: 'upi',
     },
     paymentStatus: {
-      type: String,
-      enum: ['pending', 'completed', 'failed'],
-      default: 'completed',
+      type: DataTypes.ENUM('pending', 'completed', 'failed'),
+      defaultValue: 'completed',
     },
     orderStatus: {
-      type: String,
-      enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
-      default: 'confirmed',
+      type: DataTypes.ENUM('pending', 'confirmed', 'shipped', 'delivered', 'cancelled'),
+      defaultValue: 'confirmed',
     },
-    trackingId: String,
-    notes: String,
+    trackingId: DataTypes.STRING,
+    notes: DataTypes.TEXT,
     createdAt: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
     updatedAt: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    collection: 'orders',
+    timestamps: false,
+    indexes: [
+      { fields: ['userId'] },
+      { fields: ['createdAt'] },
+    ],
   }
 );
 
-// Index for better query performance
-orderSchema.index({ user: 1 });
-orderSchema.index({ createdAt: -1 });
+Order.belongsTo(User, { foreignKey: 'userId' });
 
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = Order;

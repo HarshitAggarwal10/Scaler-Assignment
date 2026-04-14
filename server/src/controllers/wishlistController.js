@@ -3,13 +3,11 @@ const Product = require('../models/Product');
 
 exports.getWishlist = async (req, res) => {
   try {
-    let wishlist = await Wishlist.findOne({ user: req.user._id }).populate(
-      'items.product'
-    );
+    let wishlist = await Wishlist.findOne({ where: { userId: req.user.id } });
 
     if (!wishlist) {
       wishlist = await Wishlist.create({
-        user: req.user._id,
+        userId: req.user.id,
         items: [],
       });
     }
@@ -27,22 +25,21 @@ exports.addToWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    const product = await Product.findById(productId);
+    const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
 
-    let wishlist = await Wishlist.findOne({ user: req.user._id });
+    let wishlist = await Wishlist.findOne({ where: { userId: req.user.id } });
 
     if (!wishlist) {
       wishlist = await Wishlist.create({
-        user: req.user._id,
-        items: [{ product: productId }],
+        userId: req.user.id,
+        items: [{ productId, addedAt: new Date() }],
       });
     } else {
-      const itemExists = wishlist.items.some(
-        (item) => item.product.toString() === productId
-      );
+      const items = wishlist.items || [];
+      const itemExists = items.some((item) => item.productId === productId);
 
       if (itemExists) {
         return res.status(400).json({
@@ -51,8 +48,9 @@ exports.addToWishlist = async (req, res) => {
         });
       }
 
-      wishlist.items.push({ product: productId });
-      wishlist.updatedAt = Date.now();
+      items.push({ productId, addedAt: new Date() });
+      wishlist.items = items;
+      wishlist.updatedAt = new Date();
       await wishlist.save();
     }
 
@@ -70,16 +68,15 @@ exports.removeFromWishlist = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    let wishlist = await Wishlist.findOne({ user: req.user._id });
+    let wishlist = await Wishlist.findOne({ where: { userId: req.user.id } });
 
     if (!wishlist) {
       return res.status(404).json({ success: false, message: 'Wishlist not found' });
     }
 
-    wishlist.items = wishlist.items.filter(
-      (item) => item.product.toString() !== productId
-    );
-    wishlist.updatedAt = Date.now();
+    const items = (wishlist.items || []).filter((item) => item.productId !== productId);
+    wishlist.items = items;
+    wishlist.updatedAt = new Date();
 
     await wishlist.save();
 

@@ -1,8 +1,6 @@
 require('dotenv').config();
-const mongoose = require('mongoose');
 const Product = require('../src/models/Product');
-const User = require('../src/models/User');
-const connectDB = require('../src/config/database');
+const { connectDB, sequelize } = require('../src/config/database');
 
 const products = [
   {
@@ -204,7 +202,7 @@ const products = [
     originalPrice: 999,
     discount: 40,
     image:
-      'https://images.unsplash.com/photo-150784272343-583f20270319?w=400&h=400&fit=crop',
+      'https://images.unsplash.com/photo-1507842872343-583f20270319?w=400&h=400&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1507842872343-583f20270319?w=400&h=400&fit=crop',
     ],
@@ -246,11 +244,11 @@ async function seedDatabase() {
     await connectDB();
 
     // Clear existing products
-    await Product.deleteMany({});
+    await Product.destroy({ where: {} });
     console.log('Cleared existing products');
 
     // Insert new products
-    const createdProducts = await Product.insertMany(products);
+    const createdProducts = await Product.bulkCreate(products);
     console.log(`${createdProducts.length} products inserted`);
 
     console.log('Database seeded successfully!');

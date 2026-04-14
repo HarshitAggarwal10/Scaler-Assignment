@@ -1,44 +1,44 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const productSchema = new mongoose.Schema(
+const Product = sequelize.define(
+  'Product',
   {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
     title: {
-      type: String,
-      required: [true, 'Please provide product title'],
+      type: DataTypes.STRING,
+      allowNull: false,
       trim: true,
     },
     description: {
-      type: String,
-      required: true,
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
     price: {
-      type: Number,
-      required: [true, 'Please provide product price'],
-      min: 0,
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: { min: 0 },
     },
-    originalPrice: {
-      type: Number,
-      default: null,
-    },
+    originalPrice: DataTypes.FLOAT,
     discount: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 100,
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      validate: { min: 0, max: 100 },
     },
     image: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
-    images: [
-      {
-        type: String,
-      },
-    ],
+    images: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
     category: {
-      type: String,
-      required: true,
-      enum: [
+      type: DataTypes.ENUM(
         'Electronics',
         'Fashion',
         'Home',
@@ -46,50 +46,46 @@ const productSchema = new mongoose.Schema(
         'Sports',
         'Toys',
         'Beauty',
-        'Groceries',
-      ],
+        'Groceries'
+      ),
+      allowNull: false,
     },
     rating: {
-      type: Number,
-      default: 4.5,
-      min: 0,
-      max: 5,
+      type: DataTypes.FLOAT,
+      defaultValue: 4.5,
+      validate: { min: 0, max: 5 },
     },
-    reviews: [
-      {
-        user: mongoose.Schema.Types.ObjectId,
-        rating: Number,
-        comment: String,
-        createdAt: { type: Date, default: Date.now },
-      },
-    ],
+    reviews: {
+      type: DataTypes.JSON,
+      defaultValue: [],
+    },
     stock: {
-      type: Number,
-      required: true,
-      default: 0,
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
     },
     specifications: {
-      type: Map,
-      of: String,
+      type: DataTypes.JSON,
+      defaultValue: {},
     },
-    seller: String,
+    seller: DataTypes.STRING,
     isActive: {
-      type: Boolean,
-      default: true,
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     createdAt: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
-    collection: 'products',
+    timestamps: false,
+    indexes: [
+      { fields: ['category'] },
+      { fields: ['price'] },
+      { fields: ['title'] },
+    ],
   }
 );
 
-// Index for better search performance
-productSchema.index({ title: 'text', description: 'text' });
-productSchema.index({ category: 1 });
-productSchema.index({ price: 1 });
-
-module.exports = mongoose.model('Product', productSchema);
+module.exports = Product;

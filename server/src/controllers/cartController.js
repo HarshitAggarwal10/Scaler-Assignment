@@ -3,11 +3,11 @@ const Product = require('../models/Product');
 
 exports.getCart = async (req, res) => {
   try {
-    let cart = await Cart.findOne({ user: req.user._id }).populate('items.product');
+    let cart = await Cart.findOne({ where: { userId: req.user.id } });
 
     if (!cart) {
       cart = await Cart.create({
-        user: req.user._id,
+        userId: req.user.id,
         items: [],
         totalPrice: 0,
       });
@@ -26,7 +26,7 @@ exports.addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
 
-    const product = await Product.findById(productId);
+    const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found' });
     }
@@ -35,14 +35,14 @@ exports.addToCart = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Insufficient stock' });
     }
 
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ where: { userId: req.user.id } });
 
     if (!cart) {
       cart = await Cart.create({
-        user: req.user._id,
+        userId: req.user.id,
         items: [
           {
-            product: productId,
+            productId,
             quantity,
             price: product.price,
           },
@@ -50,19 +50,21 @@ exports.addToCart = async (req, res) => {
         totalPrice: product.price * quantity,
       });
     } else {
-      const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+      const items = cart.items || [];
+      const itemIndex = items.findIndex((item) => item.productId === productId);
 
       if (itemIndex > -1) {
-        cart.items[itemIndex].quantity += quantity;
+        items[itemIndex].quantity += quantity;
       } else {
-        cart.items.push({
-          product: productId,
+        items.push({
+          productId,
           quantity,
           price: product.price,
         });
       }
 
-      cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+      cart.items = items;
+      cart.totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
       await cart.save();
     }
 
@@ -80,14 +82,15 @@ exports.removeFromCart = async (req, res) => {
   try {
     const { productId } = req.body;
 
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ where: { userId: req.user.id } });
 
     if (!cart) {
       return res.status(404).json({ success: false, message: 'Cart not found' });
     }
 
-    cart.items = cart.items.filter((item) => item.product.toString() !== productId);
-    cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+    const items = (cart.items || []).filter((item) => item.productId !== productId);
+    cart.items = items;
+    cart.totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
 
     await cart.save();
 
@@ -109,25 +112,27 @@ exports.updateCartItem = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Quantity must be greater than 0' });
     }
 
-    const product = await Product.findById(productId);
+    const product = await Product.findByPk(productId);
     if (product.stock < quantity) {
       return res.status(400).json({ success: false, message: 'Insufficient stock' });
     }
 
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ where: { userId: req.user.id } });
 
     if (!cart) {
       return res.status(404).json({ success: false, message: 'Cart not found' });
     }
 
-    const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+    const items = cart.items || [];
+    const itemIndex = items.findIndex((item) => item.productId === productId);
 
     if (itemIndex === -1) {
       return res.status(404).json({ success: false, message: 'Item not in cart' });
     }
 
-    cart.items[itemIndex].quantity = quantity;
-    cart.totalPrice = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+    items[itemIndex].quantity = quantity;
+    cart.items = items;
+    cart.totalPrice = items.reduce((total, item) => total + item.price * item.quantity, 0);
 
     await cart.save();
 
@@ -143,7 +148,7 @@ exports.updateCartItem = async (req, res) => {
 
 exports.clearCart = async (req, res) => {
   try {
-    let cart = await Cart.findOne({ user: req.user._id });
+    let cart = await Cart.findOne({ where: { userId: req.user.id } });
 
     if (!cart) {
       return res.status(404).json({ success: false, message: 'Cart not found' });
