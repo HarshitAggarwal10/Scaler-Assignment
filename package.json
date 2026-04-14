@@ -1,0 +1,10 @@
+{
+  "name": "flipcart-ecommerce",
+  "version": "1.0.0",
+  "description": "Flipkart-inspired e-commerce platform",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
+    "root": "echo 'Root directory - use cd client or cd server'"
+  }
+}
