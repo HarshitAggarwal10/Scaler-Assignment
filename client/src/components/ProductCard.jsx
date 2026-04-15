@@ -6,22 +6,28 @@ export default function ProductCard({ product }) {
   const { addToCart } = useCartStore();
   const { addToWishlist, removeFromWishlist, items: wishlistItems } = useWishlistStore();
 
-  const isInWishlist = wishlistItems.some((item) => item.id === product._id);
+  // Handle both old database format and new mock data format
+  const productId = product._id || product.id;
+  const productName = product.title || product.name;
+  const productStock = product.stock !== undefined ? product.stock : 10;
+
+  const isInWishlist = wishlistItems.some((item) => item.id === productId);
 
   const handleAddToCart = () => {
-    addToCart({ id: product._id, ...product }, 1);
+    addToCart({ id: productId, ...product }, 1);
     alert('Added to cart!');
   };
 
   const handleWishlist = () => {
     if (isInWishlist) {
-      removeFromWishlist(product._id);
+      removeFromWishlist(productId);
     } else {
-      addToWishlist({ id: product._id, ...product });
+      addToWishlist({ id: productId, ...product });
     }
   };
 
-  const discount = product.discount || 20;
+  const discount = product.discount ? (typeof product.discount === 'string' ? 
+    (product.discount.includes('%') ? parseInt(product.discount) : 0) : product.discount) : 20;
   const rating = product.rating || 4.5;
 
   return (
@@ -30,7 +36,7 @@ export default function ProductCard({ product }) {
       <div className="relative h-56 overflow-hidden bg-gray-100">
         <img
           src={product.image}
-          alt={product.title}
+          alt={productName}
           className="w-full h-full object-cover hover:scale-105 transition duration-300"
         />
         {discount > 0 && (
@@ -51,7 +57,7 @@ export default function ProductCard({ product }) {
       {/* Content */}
       <div className="p-4">
         <h3 className="font-semibold text-gray-800 truncate hover:text-blue-600">
-          {product.title}
+          {productName}
         </h3>
 
         {/* Rating */}
@@ -74,21 +80,21 @@ export default function ProductCard({ product }) {
         <p className="text-xs text-gray-600 mb-3 capitalize">{product.category}</p>
 
         {/* Stock Status */}
-        <p className={`text-xs font-semibold mb-3 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+        <p className={`text-xs font-semibold mb-3 ${productStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {productStock > 0 ? `In Stock (${productStock})` : 'Out of Stock'}
         </p>
 
         {/* Buttons */}
         <div className="flex gap-2">
           <Link
-            to={`/product/${product._id}`}
+            to={`/product/${productId}`}
             className="flex-1 bg-yellow-400 text-gray-900 font-bold py-2 px-3 rounded text-center hover:bg-yellow-500 transition text-sm"
           >
             View
           </Link>
           <button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
+            disabled={productStock === 0}
             className="flex-1 bg-primary text-white font-bold py-2 px-3 rounded hover:bg-blue-700 transition disabled:bg-gray-400 text-sm"
           >
             Add to Cart
