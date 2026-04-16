@@ -41,7 +41,7 @@ export default function OrderConfirmationPage() {
             <>
               <div className="bg-gray-50 p-6 rounded mb-8">
                 <p className="text-center">
-                  <strong>Order ID:</strong> <span className="font-mono">{order._id}</span>
+                  <strong>Order ID:</strong> <span className="font-mono">{order.id}</span>
                 </p>
                 <p className="text-center mt-2 text-gray-600">
                   Order Date: {new Date(order.createdAt).toLocaleDateString()}

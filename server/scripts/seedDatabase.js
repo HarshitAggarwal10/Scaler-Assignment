@@ -3,7 +3,7 @@ const Product = require("../src/models/Product");
 const { connectDB, sequelize } = require("../src/config/database");
 
 const products = [
-  // ===== ELECTRONICS (25 PRODUCTS) =====
+  // ===== ELECTRONICS (10+ PRODUCTS) =====
   {
     title: 'Samsung 55" 4K Smart TV',
     description: "Ultra HD 4K Smart TV with voice control and smart apps",

@@ -66,11 +66,11 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order._id} className="bg-white rounded-lg shadow p-6">
+              <div key={order.id} className="bg-white rounded-lg shadow p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div>
                     <p className="text-sm text-gray-600">Order ID</p>
-                    <p className="font-bold text-sm">{order._id.slice(0, 12)}...</p>
+                    <p className="font-bold text-sm">{order.id}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">Date</p>

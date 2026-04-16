@@ -6,7 +6,7 @@ const { sendOrderConfirmation } = require('../utils/emailService');
 
 exports.createOrder = async (req, res) => {
   try {
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, items, totalAmount, superCoinsUsed } = req.body;
 
     if (!shippingAddress || !paymentMethod) {
       return res.status(400).json({
@@ -15,34 +15,33 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    const cart = await Cart.findOne({ where: { userId: req.user.id } });
-
-    if (!cart || !cart.items || cart.items.length === 0) {
+    if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Cart is empty' });
     }
 
+    // Process items from request body
     const orderItems = [];
-    for (const item of cart.items) {
+    for (const item of items) {
       const product = await Product.findByPk(item.productId);
       if (product) {
         orderItems.push({
           productId: product.id,
           quantity: item.quantity,
-          price: product.price,
+          price: item.price,
           title: product.title,
           image: product.image,
         });
       }
     }
 
+    // Calculate totals
     const subtotal = orderItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
-
-    const tax = Math.round(subtotal * 0.05); // 5% tax
-    const shippingCost = subtotal > 500 ? 0 : 40; // Free shipping above 500
-    const totalPrice = subtotal + tax + shippingCost;
+    const tax = Math.round(subtotal * 0.05);
+    const shippingCost = subtotal > 500 ? 0 : 40;
+    const calculatedTotal = totalAmount || (subtotal + tax + shippingCost);
 
     const order = await Order.create({
       userId: req.user.id,
@@ -51,21 +50,25 @@ exports.createOrder = async (req, res) => {
       subtotal,
       tax,
       shippingCost,
-      totalPrice,
+      totalPrice: calculatedTotal,
       paymentMethod,
       paymentStatus: 'completed',
       orderStatus: 'confirmed',
+      superCoinsUsed: superCoinsUsed || 0,
     });
-
-    // Clear cart
-    await cart.update({ items: [], totalPrice: 0 });
 
     // Update product stock
     for (let item of orderItems) {
       const product = await Product.findByPk(item.productId);
       if (product) {
-        await product.update({ stock: product.stock - item.quantity });
+        await product.update({ stock: Math.max(0, product.stock - item.quantity) });
       }
+    }
+
+    // Clear cart in database if it exists
+    const cart = await Cart.findOne({ where: { userId: req.user.id } });
+    if (cart) {
+      await cart.update({ items: [], totalPrice: 0 });
     }
 
     // Send confirmation email
@@ -82,6 +85,7 @@ exports.createOrder = async (req, res) => {
       order,
     });
   } catch (error) {
+    console.error('Order creation error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
