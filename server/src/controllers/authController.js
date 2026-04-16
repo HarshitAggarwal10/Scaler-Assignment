@@ -90,7 +90,20 @@ exports.getCurrentUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: {
+          street: user.street,
+          city: user.city,
+          state: user.state,
+          zipCode: user.zipCode,
+          country: user.country,
+        },
+        role: user.role,
+      },
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

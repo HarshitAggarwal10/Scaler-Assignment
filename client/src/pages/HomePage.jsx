@@ -1,36 +1,43 @@
-import { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { FiTrendingUp, FiShoppingBag, FiUsers, FiAward, FiGift, FiStar } from 'react-icons/fi';
-import ProductCard from '../components/ProductCard';
-import api from '../utils/api';
-import useAuthStore from '../stores/authStore';
+import { useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import {
+  FiTrendingUp,
+  FiShoppingBag,
+  FiAward,
+  FiGift,
+  FiStar,
+} from "react-icons/fi";
+import ProductCard from "../components/ProductCard";
+import Carousel from "../components/Carousel";
+import api from "../utils/api";
+import useAuthStore from "../stores/authStore";
 
 export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const [recentSearchProducts, setRecentSearchProducts] = useState([]);
-  const { isLoggedIn } = useAuthStore();
+  const { isLoggedIn, user } = useAuthStore(); // ✅ added user here
 
   useEffect(() => {
-    // Read search and category from URL parameters
-    const urlSearch = searchParams.get('search') || '';
-    const urlCategory = searchParams.get('category') || '';
-    
+    const urlSearch = searchParams.get("search") || "";
+    const urlCategory = searchParams.get("category") || "";
+
     setSearchTerm(urlSearch);
     setSelectedCategory(urlCategory);
-    
-    // Save search to recent searches
+
     if (urlSearch && isLoggedIn) {
-      const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
-      const filteredSearches = recentSearches.filter(s => s !== urlSearch);
-      const newSearches = [urlSearch, ...filteredSearches].slice(0, 5); // Keep last 5 searches
-      localStorage.setItem('recentSearches', JSON.stringify(newSearches));
+      const recentSearches = JSON.parse(
+        localStorage.getItem("recentSearches") || "[]"
+      );
+      const filteredSearches = recentSearches.filter((s) => s !== urlSearch);
+      const newSearches = [urlSearch, ...filteredSearches].slice(0, 5);
+      localStorage.setItem("recentSearches", JSON.stringify(newSearches));
     }
-    
+
     fetchCategories();
   }, [searchParams, isLoggedIn]);
 
@@ -38,7 +45,6 @@ export default function HomePage() {
     fetchProducts();
   }, [selectedCategory, searchTerm]);
 
-  // Fetch products for recent searches
   useEffect(() => {
     if (isLoggedIn) {
       fetchRecentSearchProducts();
@@ -47,27 +53,23 @@ export default function HomePage() {
 
   const fetchCategories = async () => {
     try {
-      const { data } = await api.get('/products/categories');
+      const { data } = await api.get("/products/categories");
       setCategories(data.categories || []);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      let url = '/products?limit=100';
-      if (selectedCategory) {
-        url += `&category=${selectedCategory}`;
-      }
-      if (searchTerm) {
-        url += `&search=${searchTerm}`;
-      }
+      let url = "/products?limit=100";
+      if (selectedCategory) url += `&category=${selectedCategory}`;
+      if (searchTerm) url += `&search=${searchTerm}`;
       const { data } = await api.get(url);
       setProducts(data.products || []);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
     } finally {
       setLoading(false);
     }
@@ -75,13 +77,14 @@ export default function HomePage() {
 
   const fetchRecentSearchProducts = async () => {
     try {
-      const recentSearches = JSON.parse(localStorage.getItem('recentSearches') || '[]');
+      const recentSearches = JSON.parse(
+        localStorage.getItem("recentSearches") || "[]"
+      );
       if (recentSearches.length === 0) {
         setRecentSearchProducts([]);
         return;
       }
 
-      // Fetch products for each recent search
       const allProducts = [];
       for (const search of recentSearches) {
         try {
@@ -89,7 +92,7 @@ export default function HomePage() {
           if (data.products && data.products.length > 0) {
             allProducts.push({
               searchTerm: search,
-              products: data.products.slice(0, 1), // Show first product for each search
+              products: data.products.slice(0, 1),
             });
           }
         } catch (err) {
@@ -98,52 +101,40 @@ export default function HomePage() {
       }
       setRecentSearchProducts(allProducts);
     } catch (error) {
-      console.error('Error fetching recent search products:', error);
+      console.error("Error fetching recent search products:", error);
     }
   };
 
   const handleCategoryClick = (category) => {
-    setSelectedCategory(selectedCategory === category ? '' : category);
+    setSelectedCategory(selectedCategory === category ? "" : category);
   };
-
-  const categoryIcons = {
-    'Electronics': '🎧',
-    'Fashion': '👕',
-    'Beauty': '💄',
-    'Home': '🏠',
-    'Books': '📚',
-    'Sports': '⚽',
-    'Toys': '🧸',
-    'Groceries': '🛒',
-  };
-
-  // "For You" recommendation items
-  const forYouItems = [
-    { id: 1, title: 'Best Sellers', icon: FiTrendingUp, color: 'text-blue-500' },
-    { id: 2, title: 'New Arrivals', icon: FiShoppingBag, color: 'text-green-500' },
-    { id: 3, title: 'Top Rated', icon: FiStar, color: 'text-yellow-500' },
-    { id: 4, title: 'Special Offers', icon: FiGift, color: 'text-red-500' },
-    { id: 5, title: 'Trending Now', icon: FiTrendingUp, color: 'text-purple-500' },
-    { id: 6, title: 'Exclusive Deals', icon: FiAward, color: 'text-pink-500' },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Carousel />
       <div className="max-w-7xl mx-auto px-4 py-4">
-        {/* Recent Searches Section - Only show when logged in */}
+
+        {/* Recent Searches Section */}
         {isLoggedIn && recentSearchProducts.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Harshit, still looking for these?
+          <div
+            className="mb-8 rounded-2xl p-6"
+            style={{
+              background:
+                "linear-gradient(135deg, #e8eaf6 0%, #e3f2fd 50%, #ede7f6 100%)",
+            }}
+          >
+            <h2 className="text-xl font-bold text-gray-800 mb-4">
+              {user?.name?.split(" ")[0]}, still looking for these?
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-2">
               {recentSearchProducts.map((item) => (
                 <Link
                   key={item.searchTerm}
                   to={`/?search=${item.searchTerm}`}
-                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                  className="bg-white rounded-xl overflow-hidden shrink-0 hover:shadow-md transition-shadow cursor-pointer"
+                  style={{ width: "200px" }}
                 >
-                  <div className="relative h-48 bg-gradient-to-br from-purple-200 to-blue-200 overflow-hidden">
+                  <div className="h-44 overflow-hidden flex items-center justify-center bg-white">
                     {item.products[0]?.image ? (
                       <img
                         src={item.products[0].image}
@@ -151,18 +142,13 @@ export default function HomePage() {
                         className="w-full h-full object-cover hover:scale-105 transition-transform"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <span className="text-gray-400 text-4xl">📦</span>
-                      </div>
+                      <span className="text-gray-400 text-4xl">📦</span>
                     )}
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-gray-700 capitalize">
+                  <div className="px-3 py-2">
+                    <p className="text-sm text-gray-600 capitalize">
                       {item.searchTerm}
-                    </h3>
-                    {item.products[0]?.category && (
-                      <p className="text-sm text-gray-500">{item.products[0].category}</p>
-                    )}
+                    </p>
                   </div>
                 </Link>
               ))}
@@ -174,8 +160,10 @@ export default function HomePage() {
         <div>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {selectedCategory ? selectedCategory : 'Products'} 
-              <span className="text-lg text-gray-500 ml-2">({products.length})</span>
+              {selectedCategory ? selectedCategory : "Products"}
+              <span className="text-lg text-gray-500 ml-2">
+                ({products.length})
+              </span>
             </h2>
           </div>
 
@@ -197,8 +185,8 @@ export default function HomePage() {
               <p className="text-gray-600 text-xl">No products found</p>
               <button
                 onClick={() => {
-                  setSelectedCategory('');
-                  setSearchTerm('');
+                  setSelectedCategory("");
+                  setSearchTerm("");
                 }}
                 className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
@@ -211,4 +199,3 @@ export default function HomePage() {
     </div>
   );
 }
-

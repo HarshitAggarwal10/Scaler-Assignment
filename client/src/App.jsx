@@ -1,8 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import api from './utils/api';
+import useAuthStore from './stores/authStore';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -18,6 +21,25 @@ import SignupPage from './pages/SignupPage';
 import './index.css';
 
 export default function App() {
+  const { isLoggedIn, user, setUser } = useAuthStore();
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (isLoggedIn && !user) {
+        try {
+          const { data } = await api.get('/auth/me');
+          if (data.success) {
+            setUser(data.user);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
+      }
+    };
+
+    fetchCurrentUser();
+  }, [isLoggedIn, user, setUser]);
+
   return (
     <Router>
       <ToastContainer
