@@ -29,10 +29,10 @@ import homeicon13 from "../assets/homeicon13.png";
 import homeicon14 from "../assets/homeicon14.png";
 
 // Import service icons for Flipkart, Minutes, Travel, Grocery
-import flipkartLogoIcon from "../assets/home1.png"; // Replace with actual logo image
-import minutesIcon from "../assets/home2.png";
-import travelIcon from "../assets/home3.png";
-import groceryIcon from "../assets/home4.png";
+import flipkartLogoIcon from "../assets/home1.png";
+import minutesIcon from "../assets/home2.png"; // Scooter icon
+import travelIcon from "../assets/home3.png"; // Plane icon
+import groceryIcon from "../assets/home4.png"; // Grocery icon
 
 export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -100,11 +100,11 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white sticky top-0 z-50 shadow-md">
-      {/* TOP SECTION - Logo, Services, Location, User Account */}
+      {/* TOP SECTION - Logo, Services, Search Bar, Pincode, User Account */}
       <div className="bg-white border-b border-gray-100">
         <div className="mx-auto px-6 py-3">
-          <div className="flex items-center justify-between gap-8">
-            {/* LEFT: Logo - Blue Flipkart Badge with Image */}
+          <div className="flex items-center justify-between gap-6">
+            {/* LEFT: Logo */}
             <Link to="/" className="flex items-center shrink-0 hover:opacity-90 transition">
               <img 
                 src={flipkartLogoIcon} 
@@ -113,35 +113,61 @@ export default function Navbar() {
               />
             </Link>
 
-            {/* CENTER-LEFT: Services with Icons */}
-            <div className="hidden lg:flex items-center gap-8">
-              <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition text-sm font-medium">
-                <img src={minutesIcon} alt="Minutes" className="h-6 w-6 object-contain" />
-                <span>Minutes</span>
+            {/* SERVICES: Minutes, Travel, Grocery with Grey Background Icons */}
+            <div className="hidden lg:flex items-center gap-6">
+              <button className="flex flex-col items-center gap-1 text-gray-700 hover:text-blue-600 transition group">
+                <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full group-hover:bg-blue-50 transition-colors">
+                  <img src={minutesIcon} alt="Minutes" className="h-7 w-7 object-contain" />
+                </div>
+                <span className="text-xs font-medium">Minutes</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition text-sm font-medium">
-                <img src={travelIcon} alt="Travel" className="h-6 w-6 object-contain" />
-                <span>Travel</span>
+              <button className="flex flex-col items-center gap-1 text-gray-700 hover:text-blue-600 transition group">
+                <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full group-hover:bg-blue-50 transition-colors">
+                  <img src={travelIcon} alt="Travel" className="h-7 w-7 object-contain" />
+                </div>
+                <span className="text-xs font-medium">Travel</span>
               </button>
-              <button className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition text-sm font-medium">
-                <img src={groceryIcon} alt="Grocery" className="h-6 w-6 object-contain" />
-                <span>Grocery</span>
+              <button className="flex flex-col items-center gap-1 text-gray-700 hover:text-blue-600 transition group">
+                <div className="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-full group-hover:bg-blue-50 transition-colors">
+                  <img src={groceryIcon} alt="Grocery" className="h-7 w-7 object-contain" />
+                </div>
+                <span className="text-xs font-medium">Grocery</span>
               </button>
             </div>
 
-            {/* CENTER-RIGHT: Location with Arrow */}
-            <div className="hidden sm:flex items-center gap-1 text-gray-700 hover:text-gray-900 transition cursor-pointer flex-1 justify-center">
+            {/* SEARCH BAR - Centered between services and pincode */}
+            <div className="flex-1 max-w-2xl">
+              <div className="flex border border-gray-300 rounded-md bg-white shadow-sm hover:shadow transition">
+                <input
+                  type="text"
+                  placeholder="Search for Products, Brands and More"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={handleSearchSubmit}
+                  className="flex-1 px-4 py-2.5 outline-none text-sm placeholder-gray-500 rounded-l-md"
+                />
+                <button
+                  onClick={handleSearchSubmit}
+                  className="px-5 py-2.5 bg-blue-600 text-white hover:bg-blue-700 transition font-medium rounded-r-md flex items-center justify-center"
+                >
+                  <FiSearch size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT: Pincode with Arrow */}
+            <div className="hidden md:flex items-center gap-1 text-gray-700 hover:text-gray-900 transition cursor-pointer shrink-0">
               <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span className="font-medium text-xs">134203</span>
-              <span className="text-blue-600 font-medium text-xs">Select delivery location</span>
-              <span className="text-gray-400 text-xs ml-1">›</span>
+              <span className="font-medium text-sm">134203</span>
+              <span className="text-blue-600 font-medium text-xs ml-1">Select delivery location</span>
+              <span className="text-gray-400 text-sm ml-1">›</span>
             </div>
 
             {/* RIGHT: User Menu, More, Cart */}
-            <div className="flex items-center gap-6 shrink-0">
+            <div className="flex items-center gap-5 shrink-0">
               {/* User Account Dropdown */}
               <div className="relative">
                 <button
@@ -155,11 +181,11 @@ export default function Navbar() {
                   {isLoggedIn ? (
                     <>
                       {user?.name?.split(" ")[0]}
-                      <FiChevronDown size={16} />
+                      <FiChevronDown size={14} />
                     </>
                   ) : (
                     <>
-                      Login <FiChevronDown size={16} />
+                      Login <FiChevronDown size={14} />
                     </>
                   )}
                 </button>
@@ -249,7 +275,7 @@ export default function Navbar() {
                   }}
                   className="text-gray-700 hover:text-blue-600 text-sm font-medium flex items-center gap-1 transition"
                 >
-                  More <FiChevronDown size={16} />
+                  More <FiChevronDown size={14} />
                 </button>
                 {isMoreMenuOpen && (
                   <div className="absolute right-0 mt-3 w-48 bg-white rounded-lg shadow-xl z-50 border border-gray-200">
@@ -266,12 +292,12 @@ export default function Navbar() {
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative text-gray-700 hover:text-blue-600 transition flex items-center gap-2"
+                className="relative text-gray-700 hover:text-blue-600 transition flex items-center gap-1"
               >
                 <FiShoppingCart size={20} />
                 <span className="text-sm font-medium hidden sm:inline">Cart</span>
                 {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-1 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                  <span className="absolute -top-2 -right-3 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
                     {cartItems.length}
                   </span>
                 )}
@@ -281,54 +307,31 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* SEARCH BAR SECTION - Exact Flipkart Style */}
-      <div className="bg-blue-50 py-3 px-6 border-b border-gray-100">
-        <div className="mx-auto flex gap-3 justify-center">
-          <div className="flex gap-2 flex-1 max-w-3xl">
-            <div className="flex gap-2 flex-1 border border-gray-300 rounded-sm bg-white shadow-sm hover:shadow transition">
-              <input
-                type="text"
-                placeholder="Search for Products, Brands and More"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyPress={handleSearchSubmit}
-                className="flex-1 px-4 py-2.5 outline-none text-sm placeholder-gray-500 rounded-l-sm"
-              />
-              <button
-                onClick={handleSearchSubmit}
-                className="px-6 py-2.5 bg-blue-600 text-white hover:bg-blue-700 transition font-medium rounded-r-sm flex items-center gap-2"
-              >
-                <FiSearch size={18} />
-                <span className="hidden sm:inline text-sm">Search</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* CATEGORY ICONS SECTION */}
+      {/* CATEGORY ICONS SECTION - Centered with margin left */}
       <div className="bg-white px-6 py-3 border-b border-gray-100 shadow-sm">
-        <div className="mx-auto overflow-x-auto scrollbar-hide">
-          <div className="flex gap-6 min-w-max justify-start">
-            {categories.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => handleCategoryClick(item.category)}
-                className="flex flex-col items-center gap-1 py-1 hover:text-blue-600 transition group shrink-0"
-                title={item.category}
-              >
-                <div className="w-14 h-14 flex items-center justify-center bg-gray-50 rounded-full group-hover:bg-blue-50 transition-colors duration-200">
-                  <img
-                    src={item.icon}
-                    alt={item.name}
-                    className="w-10 h-10 object-contain group-hover:scale-110 transition-transform duration-200"
-                  />
-                </div>
-                <span className="text-xs text-gray-700 group-hover:text-blue-600 font-medium whitespace-nowrap text-center">
-                  {item.name}
-                </span>
-              </button>
-            ))}
+        <div className="max-w-7xl mx-auto">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-5 min-w-max justify-center md:justify-start">
+              {categories.map((item, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleCategoryClick(item.category)}
+                  className="flex flex-col items-center gap-1 py-1 hover:text-blue-600 transition group shrink-0"
+                  title={item.category}
+                >
+                  <div className="w-14 h-14 flex items-center justify-center bg-gray-100 rounded-full group-hover:bg-blue-50 transition-colors duration-200">
+                    <img
+                      src={item.icon}
+                      alt={item.name}
+                      className="w-9 h-9 object-contain group-hover:scale-110 transition-transform duration-200"
+                    />
+                  </div>
+                  <span className="text-xs text-gray-700 group-hover:text-blue-600 font-medium whitespace-nowrap text-center">
+                    {item.name}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
