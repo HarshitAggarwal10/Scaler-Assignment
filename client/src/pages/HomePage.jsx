@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { FiTrendingUp, FiShoppingBag, FiUsers, FiAward, FiGift, FiStar } from 'react-icons/fi';
 import ProductCard from '../components/ProductCard';
 import api from '../utils/api';
@@ -10,11 +10,17 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    // Read search and category from URL parameters
+    const urlSearch = searchParams.get('search') || '';
+    const urlCategory = searchParams.get('category') || '';
+    
+    setSearchTerm(urlSearch);
+    setSelectedCategory(urlCategory);
     fetchCategories();
-    fetchProducts();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchProducts();

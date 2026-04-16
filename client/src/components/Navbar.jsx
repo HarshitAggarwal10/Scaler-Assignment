@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FiShoppingCart,
@@ -14,14 +14,33 @@ import {
 import { FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
 import useAuthStore from '../stores/authStore';
 import useCartStore from '../stores/cartStore';
+import api from '../utils/api';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [userOrders, setUserOrders] = useState([]);
+  const [searchInput, setSearchInput] = useState('');
   const { isLoggedIn, user, logout } = useAuthStore();
   const { items: cartItems, superCoins } = useCartStore();
   const navigate = useNavigate();
+
+  // Fetch user orders when dropdown opens
+  useEffect(() => {
+    if (isUserMenuOpen && isLoggedIn) {
+      fetchUserOrders();
+    }
+  }, [isUserMenuOpen, isLoggedIn]);
+
+  const fetchUserOrders = async () => {
+    try {
+      const { data } = await api.get('/orders');
+      setUserOrders(data.orders || []);
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -29,9 +48,11 @@ export default function Navbar() {
     navigate('/');
   };
 
-  const handleSearchSubmit = (e, searchTerm) => {
-    if (e.key === 'Enter' && searchTerm) {
-      navigate(`/?search=${searchTerm}`);
+  const handleSearchSubmit = (e) => {
+    const key = e.key || (e.type === 'click' ? 'Enter' : null);
+    if ((key === 'Enter' || e.type === 'click') && searchInput.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchInput)}`);
+      setSearchInput('');
       setIsMobileMenuOpen(false);
     }
   };
@@ -114,8 +135,26 @@ export default function Navbar() {
                           className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700"
                         >
                           <FiPackage className="inline mr-2" size={16} />
-                          Orders
+                          My Orders
                         </Link>
+                        {userOrders && userOrders.length > 0 && (
+                          <div className="border-t border-gray-100 mt-2 pt-2">
+                            <p className="px-3 text-xs font-semibold text-gray-500 uppercase mb-2">Recent Orders</p>
+                            {userOrders.slice(0, 2).map((order) => (
+                              <button
+                                key={order.id}
+                                onClick={() => {
+                                  setIsUserMenuOpen(false);
+                                  navigate(`/order-confirmation/${order.id}`);
+                                }}
+                                className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-xs text-gray-600 truncate"
+                                title={`Order #${order.id} - ₹${order.totalPrice}`}
+                              >
+                                Order #{order.id?.substring(0, 8)}... - ₹{order.totalPrice}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                         <button className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
                           🎫 Coupons
                         </button>
@@ -243,14 +282,15 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Search for Products, Brands and More"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleSearchSubmit}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && e.target.value) {
-                  navigate(`/?search=${e.target.value}`);
-                }
-              }}
             />
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+            <button 
+              onClick={handleSearchSubmit}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
               <FiSearch size={20} />
             </button>
           </div>

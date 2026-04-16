@@ -5,6 +5,7 @@ import useCartStore from '../stores/cartStore';
 import useAuthStore from '../stores/authStore';
 import api from '../utils/api';
 import DeliveryAddressSidebar from '../components/DeliveryAddressSidebar';
+import OrderConfirmationModal from '../components/OrderConfirmationModal';
 import { showToast } from '../utils/toast';
 
 export default function CheckoutPage() {
@@ -13,6 +14,8 @@ export default function CheckoutPage() {
   const { isLoggedIn, user } = useAuthStore();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [pendingOrderData, setPendingOrderData] = useState(null);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -91,6 +94,28 @@ export default function CheckoutPage() {
       return;
     }
 
+    // Prepare order data for confirmation modal
+    const orderToConfirm = {
+      items: items,
+      shippingAddress: {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        pinCode: formData.pinCode,
+      },
+      paymentMethod: formData.paymentMethod,
+      finalTotal: finalTotal,
+      superCoinsDiscount: useSuperCoins ? Math.min(superCoins || 0, finalTotal) : 0,
+    };
+
+    setPendingOrderData(orderToConfirm);
+    setShowConfirmationModal(true);
+  };
+
+  const handleConfirmOrder = async () => {
     try {
       setLoading(true);
 
@@ -100,16 +125,8 @@ export default function CheckoutPage() {
           quantity: item.quantity,
           price: item.price,
         })),
-        shippingAddress: {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          pinCode: formData.pinCode,
-        },
-        paymentMethod: formData.paymentMethod,
+        shippingAddress: pendingOrderData.shippingAddress,
+        paymentMethod: pendingOrderData.paymentMethod,
         totalAmount: useSuperCoins ? finalTotal - (superCoins || 0) : finalTotal,
         superCoinsUsed: useSuperCoins ? superCoins : 0,
       };
@@ -122,10 +139,11 @@ export default function CheckoutPage() {
         addSuperCoins(coinsEarned);
 
         clearCart();
+        setShowConfirmationModal(false);
         showToast.success(`Order placed successfully! You earned ${coinsEarned} SuperCoins`);
         
         // Use the order ID from the response
-        const orderId = data.order?._id || data.orderId || 'unknown';
+        const orderId = data.order?.id || data.order?._id || data.orderId || 'unknown';
         setTimeout(() => {
           navigate(`/order-confirmation/${orderId}`);
         }, 1500);
@@ -150,6 +168,14 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      <OrderConfirmationModal
+        isOpen={showConfirmationModal}
+        onConfirm={handleConfirmOrder}
+        onCancel={() => setShowConfirmationModal(false)}
+        orderData={pendingOrderData}
+        loading={loading}
+      />
+
       <DeliveryAddressSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
@@ -347,7 +373,7 @@ export default function CheckoutPage() {
                 disabled={loading}
                 className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 text-lg"
               >
-                {loading ? 'Processing...' : `Place Order - ₹${finalTotal}`}
+                {loading ? 'Processing...' : `Proceed to Confirm - ₹${finalTotal}`}
               </button>
             </form>
           </div>
