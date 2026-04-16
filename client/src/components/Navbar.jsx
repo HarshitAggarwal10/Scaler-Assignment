@@ -76,26 +76,34 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white sticky top-0 z-50 shadow-sm">
-      {/* Top Bar */}
+      {/* Top Bar - Logo & Location */}
       <div className="border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-2">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+            <Link to="/" className="flex items-center gap-2 font-bold text-xl flex-shrink-0">
               <FiShoppingCart className="text-yellow-500 text-2xl" />
               <span className="text-yellow-500">Flipcart</span>
             </Link>
 
-            {/* Left section - Location */}
-            <div className="hidden md:flex items-center gap-2 text-xs text-gray-600">
-              <span>📍 134203</span>
-              <button className="text-blue-600 hover:underline cursor-pointer">
-                Select delivery location
-              </button>
+            {/* Location & Supercoins Info - Centered area */}
+            <div className="hidden md:flex items-center gap-6 text-xs text-gray-600 flex-1 justify-center">
+              <div className="flex items-center gap-1">
+                <span>📍 134203</span>
+                <button className="text-blue-600 hover:underline cursor-pointer text-xs">
+                  Select delivery location
+                </button>
+              </div>
+
+              {isLoggedIn && (superCoins || 0) > 0 && (
+                <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <span className="text-xs font-bold text-yellow-700">💰 ₹{superCoins}</span>
+                </div>
+              )}
             </div>
 
             {/* Right section - User menu and more */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
               {/* User Account Dropdown */}
               <div className="relative hidden md:block">
                 <button
@@ -103,17 +111,17 @@ export default function Navbar() {
                     setIsUserMenuOpen(!isUserMenuOpen);
                     setIsMoreMenuOpen(false);
                   }}
-                  className="flex items-center gap-1 text-gray-700 hover:text-blue-600 text-sm font-medium"
+                  className="flex items-center gap-1 text-gray-700 hover:text-blue-600 text-sm font-medium whitespace-nowrap"
                 >
                   <FiUser size={16} />
                   {isLoggedIn ? (
                     <>
                       {user?.name?.split(' ')[0]}
-                      <FiChevronDown size={16} />
+                      <FiChevronDown size={14} />
                     </>
                   ) : (
                     <>
-                      Login <FiChevronDown size={16} />
+                      Login <FiChevronDown size={14} />
                     </>
                   )}
                 </button>
@@ -221,9 +229,9 @@ export default function Navbar() {
                     setIsMoreMenuOpen(!isMoreMenuOpen);
                     setIsUserMenuOpen(false);
                   }}
-                  className="text-gray-700 hover:text-blue-600 text-sm font-medium flex items-center gap-1"
+                  className="text-gray-700 hover:text-blue-600 text-xs font-medium flex items-center gap-1 whitespace-nowrap"
                 >
-                  More <FiChevronDown size={16} />
+                  More <FiChevronDown size={14} />
                 </button>
                 {isMoreMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl p-3 z-50 border border-gray-100">
@@ -243,23 +251,15 @@ export default function Navbar() {
                 )}
               </div>
 
-              {/* SuperCoins Display */}
-              {isLoggedIn && (superCoins || 0) > 0 && (
-                <div className="hidden md:flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                  <span className="text-sm font-semibold text-yellow-600">💰</span>
-                  <span className="text-xs font-bold text-yellow-700">₹{superCoins}</span>
-                </div>
-              )}
-
               {/* Cart */}
               <Link
                 to="/cart"
-                className="relative text-gray-700 hover:text-blue-600 transition hidden md:flex items-center gap-1 text-sm font-medium"
+                className="relative text-gray-700 hover:text-blue-600 transition hidden md:flex items-center gap-1 text-xs font-medium whitespace-nowrap"
               >
                 <FiShoppingCart size={18} />
                 <span>Cart</span>
                 {cartItems.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
+                  <span className="absolute -top-3 -right-3 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center font-bold">
                     {cartItems.length}
                   </span>
                 )}
@@ -276,20 +276,20 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="max-w-7xl mx-auto px-4 py-2">
-          <div className="flex gap-2">
+        {/* Search Bar with Right-Side Controls */}
+        <div className="max-w-7xl mx-auto px-4 py-3 flex gap-3 items-center">
+          <div className="flex gap-2 flex-1">
             <input
               type="text"
               placeholder="Search for Products, Brands and More"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyPress={handleSearchSubmit}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
+              className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500 text-sm"
             />
             <button 
               onClick={handleSearchSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0"
             >
               <FiSearch size={20} />
             </button>

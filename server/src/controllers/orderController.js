@@ -169,3 +169,43 @@ exports.cancelOrder = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByPk(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    const validStatuses = ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Allowed: ${validStatuses.join(', ')}`,
+      });
+    }
+
+    await order.update({ orderStatus: status });
+
+    // Send email notification when order is delivered
+    if (status === 'delivered') {
+      const user = await User.findByPk(order.userId);
+      const { sendOrderDeliveryNotification } = require('../utils/emailService');
+      try {
+        await sendOrderDeliveryNotification(user.email, user, order);
+      } catch (err) {
+        console.log('Delivery notification email not sent');
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status}`,
+      order,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
