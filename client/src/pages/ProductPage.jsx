@@ -10,6 +10,7 @@ export default function ProductPage() {
   const { addToCart } = useCartStore();
   const [product, setProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,20 +51,51 @@ export default function ProductPage() {
           {/* Image */}
           <div className="flex items-center justify-center">
             <div className="w-full">
-              <img
-                src={product.image}
-                alt={product.title}
-                className="w-full object-cover rounded-lg"
-              />
+              {/* Main Image Display */}
+              <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4">
+                <img
+                  src={product.images && product.images.length > 0 ? product.images[currentImageIndex] : product.image}
+                  alt={product.title}
+                  className="w-full h-96 object-cover rounded-lg"
+                />
+                
+                {/* Image Navigation */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition"
+                    >
+                      ❮
+                    </button>
+                    <button
+                      onClick={() => setCurrentImageIndex((prev) => (prev + 1) % product.images.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75 transition"
+                    >
+                      ❯
+                    </button>
+                    
+                    {/* Image Counter */}
+                    <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                      {currentImageIndex + 1} / {product.images.length}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Thumbnail Gallery */}
               {product.images && product.images.length > 1 && (
-                <div className="flex gap-2 mt-4">
-                  {product.images.slice(0, 3).map((img, idx) => (
-                    <img
+                <div className="flex gap-2 overflow-x-auto">
+                  {product.images.map((img, idx) => (
+                    <button
                       key={idx}
-                      src={img}
-                      alt={`View ${idx}`}
-                      className="w-20 h-20 object-cover rounded cursor-pointer hover:border-2 border-primary"
-                    />
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`flex-shrink-0 w-20 h-20 object-cover rounded border-2 transition ${
+                        currentImageIndex === idx ? 'border-blue-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <img src={img} alt={`View ${idx}`} className="w-full h-full object-cover rounded" />
+                    </button>
                   ))}
                 </div>
               )}
