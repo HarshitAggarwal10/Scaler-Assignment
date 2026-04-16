@@ -66,7 +66,7 @@ export default function Navbar() {
     'Home': '🏠',
     'Appliances': '🍳',
     'Toys': '🧸',
-    'Food & H...': '🍔',
+    'Food & H...': '🛒',
     'Auto Acc...': '🚗',
     '2 Wheele...': '🏍️',
     'Sports & ...': '⚽',
@@ -299,15 +299,44 @@ export default function Navbar() {
         {/* Category Navigation */}
         <div className="max-w-7xl mx-auto px-4 py-2 border-t border-gray-100 hidden md:block">
           <div className="flex gap-8 overflow-x-auto pb-1">
-            {['For You', 'Fashion', 'Mobiles', 'Beauty', 'Electronics', 'Home', 'Appliances', 'Toys', 'Food & H...', 'Auto Acc...', '2 Wheele...', 'Sports & ...', 'Books & ...', 'Furniture'].map((cat) => (
-              <button
-                key={cat}
-                className="flex flex-col items-center gap-1 text-gray-700 hover:text-blue-600 whitespace-nowrap text-xs py-2 transition"
-              >
-                <span className="text-2xl">{categoryIcons[cat] || '📦'}</span>
-                <span className="text-xs">{cat}</span>
-              </button>
-            ))}
+            {['For You', 'Fashion', 'Mobiles', 'Beauty', 'Electronics', 'Home', 'Appliances', 'Toys', 'Food & H...', 'Auto Acc...', '2 Wheele...', 'Sports & ...', 'Books & ...', 'Furniture'].map((cat) => {
+              const fullCategoryName = {
+                'For You': 'All',
+                'Fashion': 'Fashion',
+                'Mobiles': 'Electronics',
+                'Beauty': 'Beauty',
+                'Electronics': 'Electronics',
+                'Home': 'Home',
+                'Appliances': 'Appliances',
+                'Toys': 'Toys',
+                'Food & H...': 'Groceries',
+                'Auto Acc...': 'Auto Accessories',
+                '2 Wheele...': '2 Wheelers',
+                'Sports & ...': 'Sports',
+                'Books & ...': 'Books',
+                'Furniture': 'Furniture',
+              }[cat];
+
+              const handleCategoryClick = (categoryName) => {
+                if (categoryName === 'All') {
+                  navigate('/', { replace: true });
+                } else {
+                  navigate(`/?category=${encodeURIComponent(categoryName)}`, { replace: true });
+                }
+              };
+
+              return (
+                <button
+                  key={cat}
+                  onClick={() => handleCategoryClick(fullCategoryName)}
+                  className="flex flex-col items-center gap-1 text-gray-700 hover:text-blue-600 hover:bg-blue-50 whitespace-nowrap text-xs py-2 px-2 rounded transition cursor-pointer"
+                  title={fullCategoryName}
+                >
+                  <span className="text-2xl">{categoryIcons[cat] || '📦'}</span>
+                  <span className="text-xs">{cat}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

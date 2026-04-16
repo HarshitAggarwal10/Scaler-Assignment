@@ -46,7 +46,11 @@ const Product = sequelize.define(
         'Sports',
         'Toys',
         'Beauty',
-        'Groceries'
+        'Groceries',
+        'Appliances',
+        'Auto Accessories',
+        '2 Wheelers',
+        'Furniture'
       ),
       allowNull: false,
     },
