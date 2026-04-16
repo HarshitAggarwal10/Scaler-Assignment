@@ -1,3 +1,5 @@
+import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaYoutube } from 'react-icons/fa';
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300 py-12 mt-16">
@@ -10,6 +12,7 @@ export default function Footer() {
               <li><a href="#" className="hover:text-white transition">About Us</a></li>
               <li><a href="#" className="hover:text-white transition">Careers</a></li>
               <li><a href="#" className="hover:text-white transition">Blog</a></li>
+              <li><a href="#" className="hover:text-white transition">Press</a></li>
             </ul>
           </div>
 
@@ -20,6 +23,7 @@ export default function Footer() {
               <li><a href="#" className="hover:text-white transition">Contact Us</a></li>
               <li><a href="#" className="hover:text-white transition">FAQ</a></li>
               <li><a href="#" className="hover:text-white transition">Track Order</a></li>
+              <li><a href="#" className="hover:text-white transition">Shipping Info</a></li>
             </ul>
           </div>
 
@@ -30,17 +34,30 @@ export default function Footer() {
               <li><a href="#" className="hover:text-white transition">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition">Terms & Conditions</a></li>
               <li><a href="#" className="hover:text-white transition">Return Policy</a></li>
+              <li><a href="#" className="hover:text-white transition">Security</a></li>
             </ul>
           </div>
 
           {/* Social */}
           <div>
             <h3 className="font-bold text-white mb-4">Follow Us</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#" className="hover:text-white transition">Facebook</a></li>
-              <li><a href="#" className="hover:text-white transition">Twitter</a></li>
-              <li><a href="#" className="hover:text-white transition">Instagram</a></li>
-            </ul>
+            <div className="flex gap-4">
+              <a href="#" className="text-gray-400 hover:text-blue-400 transition text-2xl">
+                <FaFacebook />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-blue-400 transition text-2xl">
+                <FaTwitter />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-pink-400 transition text-2xl">
+                <FaInstagram />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-blue-400 transition text-2xl">
+                <FaLinkedin />
+              </a>
+              <a href="#" className="text-gray-400 hover:text-red-500 transition text-2xl">
+                <FaYoutube />
+              </a>
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { FiHeart, FiShoppingCart } from 'react-icons/fi';
 import useCartStore from '../stores/cartStore';
 import useWishlistStore from '../stores/wishlistStore';
 
@@ -13,12 +14,13 @@ export default function ProductCard({ product }) {
 
   const isInWishlist = wishlistItems.some((item) => item.id === productId);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.preventDefault();
     addToCart({ id: productId, ...product }, 1);
-    alert('Added to cart!');
   };
 
-  const handleWishlist = () => {
+  const handleWishlist = (e) => {
+    e.preventDefault();
     if (isInWishlist) {
       removeFromWishlist(productId);
     } else {
@@ -29,78 +31,84 @@ export default function ProductCard({ product }) {
   const discount = product.discount ? (typeof product.discount === 'string' ? 
     (product.discount.includes('%') ? parseInt(product.discount) : 0) : product.discount) : 20;
   const rating = product.rating || 4.5;
+  const imageUrl = product.image || product.images?.[0] || 'https://via.placeholder.com/200';
 
   return (
-    <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden border border-gray-200">
-      {/* Image Container */}
-      <div className="relative h-56 overflow-hidden bg-gray-100">
-        <img
-          src={product.image}
-          alt={productName}
-          className="w-full h-full object-cover hover:scale-105 transition duration-300"
-        />
-        {discount > 0 && (
-          <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-md font-bold text-sm">
-            -{discount}%
-          </div>
-        )}
-        <button
-          onClick={handleWishlist}
-          className={`absolute top-2 left-2 text-2xl transition ${
-            isInWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
-          }`}
-        >
-          ❤️
-        </button>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-800 truncate hover:text-blue-600">
-          {productName}
-        </h3>
-
-        {/* Rating */}
-        <div className="flex items-center gap-2 my-2">
-          <span className="text-sm font-semibold">⭐ {rating}</span>
-          <span className="text-xs text-gray-500">({Math.floor(Math.random() * 1000)} reviews)</span>
-        </div>
-
-        {/* Price */}
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xl font-bold text-gray-900">₹{product.price}</span>
-          {product.originalPrice && (
-            <span className="text-gray-500 line-through text-sm">
-              ₹{product.originalPrice}
-            </span>
+    <Link to={`/product/${productId}`} className="block">
+      <div className="bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100 hover:border-gray-300">
+        {/* Image Container */}
+        <div className="relative h-48 sm:h-56 overflow-hidden bg-gray-100">
+          <img
+            src={imageUrl}
+            alt={productName}
+            className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+          />
+          
+          {discount > 0 && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded font-bold text-sm sm:text-base">
+              -{discount}%
+            </div>
           )}
+          
+          <button
+            onClick={handleWishlist}
+            className={`absolute top-2 left-2 p-2 rounded-full transition ${
+              isInWishlist 
+                ? 'bg-red-500 text-white' 
+                : 'bg-white bg-opacity-70 text-gray-600 hover:bg-red-500 hover:bg-opacity-100 hover:text-white'
+            }`}
+          >
+            <FiHeart size={18} fill={isInWishlist ? 'currentColor' : 'none'} />
+          </button>
         </div>
 
-        {/* Category */}
-        <p className="text-xs text-gray-600 mb-3 capitalize">{product.category}</p>
+        {/* Content */}
+        <div className="p-3 sm:p-4">
+          
+          {/* Product Name */}
+          <h3 className="font-semibold text-gray-800 text-sm sm:text-base line-clamp-2 hover:text-blue-600 transition">
+            {productName}
+          </h3>
 
-        {/* Stock Status */}
-        <p className={`text-xs font-semibold mb-3 ${productStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {productStock > 0 ? `In Stock (${productStock})` : 'Out of Stock'}
-        </p>
+          {/* Rating */}
+          <div className="flex items-center gap-1 my-2 text-xs sm:text-sm">
+            <span className="bg-green-600 text-white px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5">
+              ★ {rating}
+            </span>
+            <span className="text-gray-600">({Math.floor(Math.random() * 1000)})</span>
+          </div>
 
-        {/* Buttons */}
-        <div className="flex gap-2">
-          <Link
-            to={`/product/${productId}`}
-            className="flex-1 bg-yellow-400 text-gray-900 font-bold py-2 px-3 rounded text-center hover:bg-yellow-500 transition text-sm"
-          >
-            View
-          </Link>
+          {/* Price Section */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg sm:text-xl font-bold text-gray-900">₹{product.price?.toLocaleString()}</span>
+            {product.originalPrice && (
+              <span className="text-gray-500 line-through text-xs sm:text-sm">
+                ₹{product.originalPrice?.toLocaleString()}
+              </span>
+            )}
+          </div>
+
+          {/* Category Badge */}
+          <p className="text-xs text-gray-600 mb-2 capitalize bg-gray-100 inline-block px-2 py-1 rounded">
+            {product.category || 'Product'}
+          </p>
+
+          {/* Stock Status */}
+          <p className={`text-xs font-semibold mb-3 ${productStock > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {productStock > 0 ? `In Stock` : 'Out of Stock'}
+          </p>
+
+          {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
             disabled={productStock === 0}
-            className="flex-1 bg-primary text-white font-bold py-2 px-3 rounded hover:bg-blue-700 transition disabled:bg-gray-400 text-sm"
+            className="w-full bg-blue-600 text-white font-bold py-2 px-3 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed text-sm sm:text-base flex items-center justify-center gap-2"
           >
+            <FiShoppingCart size={16} />
             Add to Cart
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
