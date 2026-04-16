@@ -302,7 +302,7 @@ export default function Navbar() {
               <button
                 key={index}
                 onClick={() => handleCategoryClick(item.category)}
-                className="flex flex-col items-center gap-2 py-1 hover:text-blue-600 transition group shrink-0"
+                className="flex flex-col items-center gap-2 py-1 hover:text-blue-600 transition group flex-shrink-0"
                 title={item.category}
               >
                 <img
@@ -316,6 +316,194 @@ export default function Navbar() {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+                <button
+                  onClick={() => {
+                    setIsUserMenuOpen(!isUserMenuOpen);
+                    setIsMoreMenuOpen(false);
+                  }}
+                  className="flex items-center gap-1 text-gray-700 hover:text-blue-600 text-sm font-medium transition"
+                >
+                  <FiUser size={16} />
+                  {isLoggedIn ? (
+                    <>
+                      {user?.name?.split(" ")[0]}
+                      <FiChevronDown size={14} />
+                    </>
+                  ) : (
+                    <>
+                      Login <FiChevronDown size={14} />
+                    </>
+                  )}
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-2xl z-50 border border-gray-200">
+                    <div className="p-3 border-b border-gray-200">
+                      <h3 className="font-bold text-gray-800 text-sm">
+                        Your Account
+                      </h3>
+                    </div>
+                    {isLoggedIn ? (
+                      <div className="p-2">
+                        <button className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
+                          <FiUser className="inline mr-2" size={14} />
+                          My Profile
+                        </button>
+                        <Link
+                          to="/orders"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700 block"
+                        >
+                          <FiPackage className="inline mr-2" size={14} />
+                          My Orders
+                        </Link>
+                        {userOrders?.length > 0 && (
+                          <div className="border-t border-gray-100 mt-2 pt-2">
+                            <p className="px-3 text-xs font-semibold text-gray-500 mb-2">
+                              RECENT ORDERS
+                            </p>
+                            {userOrders.slice(0, 2).map((order) => (
+                              <button
+                                key={order.id}
+                                onClick={() => {
+                                  setIsUserMenuOpen(false);
+                                  navigate(`/order-confirmation/${order.id}`);
+                                }}
+                                className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-xs text-gray-600 truncate"
+                              >
+                                Order #{order.id?.substring(0, 8)}... - ₹
+                                {order.totalPrice}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        <button className="w-full text-left py-2 px-3 hover:bg-yellow-50 rounded text-sm text-yellow-600 font-semibold border-t mt-2">
+                          💰 SuperCoins: ₹{superCoins || 0}
+                        </button>
+                        <Link
+                          to="/wishlist"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700 block"
+                        >
+                          ❤️ Wishlist
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-red-600 border-t mt-2 font-semibold"
+                        >
+                          <FiLogOut className="inline mr-2" size={14} />
+                          Logout
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="p-2">
+                        <Link
+                          to="/login"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-blue-600 font-semibold block"
+                        >
+                          Login
+                        </Link>
+                        <Link
+                          to="/signup"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700 block"
+                        >
+                          Sign Up
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* More Dropdown */}
+              <div className="relative hidden lg:block">
+                <button
+                  onClick={() => {
+                    setIsMoreMenuOpen(!isMoreMenuOpen);
+                    setIsUserMenuOpen(false);
+                  }}
+                  className="text-gray-700 hover:text-blue-600 text-sm font-medium flex items-center gap-1 transition"
+                >
+                  More <FiChevronDown size={14} />
+                </button>
+                {isMoreMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-2xl z-50 border border-gray-200">
+                    <button className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
+                      🏪 Become a Seller
+                    </button>
+                    <button className="w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
+                      📞 Customer Care
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Cart */}
+              <Link
+                to="/cart"
+                className="relative text-gray-700 hover:text-blue-600 transition text-sm font-medium flex items-center gap-1"
+              >
+                🛒
+                {cartItems.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center font-bold">
+                    {cartItems.length}
+                  </span>
+                )}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* MIDDLE SECTION - Search Bar */}
+      <div className="bg-white py-2 px-6 border-b border-gray-200">
+        <div className="max-w-full flex gap-3">
+          <div className="flex gap-2 flex-1 max-w-4xl">
+            <input
+              type="text"
+              placeholder="Search for Products, Brands and More"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyPress={handleSearchSubmit}
+              className="flex-1 px-4 py-3 border border-blue-400 rounded focus:outline-none focus:border-blue-600 text-sm"
+            />
+            <button
+              onClick={handleSearchSubmit}
+              className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+            >
+              <FiSearch size={18} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* BOTTOM SECTION - Category Icons with Horizontal Scroll */}
+      <div className="bg-white px-6 py-3 border-b border-gray-200">
+        <div className="flex gap-6 min-w-max overflow-x-auto scrollbar-hide">
+          {categories.map((item, index) => (
+            <button
+              key={index}
+              onClick={() => handleCategoryClick(item.category)}
+              className="flex flex-col items-center gap-2 py-1 hover:text-blue-600 transition group flex-shrink-0"
+              title={item.category}
+            >
+              <img
+                src={item.icon}
+                alt={item.name}
+                className="w-14 h-14 object-contain group-hover:scale-120 transition transform duration-200"
+              />
+              <span className="text-xs text-gray-700 group-hover:text-blue-600 font-medium whitespace-nowrap text-center leading-tight">
+                {item.name}
+              </span>
+            </button>
+          ))}
         </div>
       </div>
     </nav>
