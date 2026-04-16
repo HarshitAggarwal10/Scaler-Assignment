@@ -81,7 +81,7 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 font-bold text-xl flex-shrink-0">
+            <Link to="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
               <FiShoppingCart className="text-yellow-500 text-2xl" />
               <span className="text-yellow-500">Flipcart</span>
             </Link>
@@ -96,14 +96,14 @@ export default function Navbar() {
               </div>
 
               {isLoggedIn && (superCoins || 0) > 0 && (
-                <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
-                  <span className="text-xs font-bold text-yellow-700">💰 ₹{superCoins}</span>
+                <div className="flex items-center gap-1 px-2 py-1 bg-linear-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <span className="text-xs font-bold text-yellow-700">₹{superCoins}</span>
                 </div>
               )}
             </div>
 
             {/* Right section - User menu and more */}
-            <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2 md:gap-4 shrink-0">
               {/* User Account Dropdown */}
               <div className="relative hidden md:block">
                 <button
@@ -289,7 +289,7 @@ export default function Navbar() {
             />
             <button 
               onClick={handleSearchSubmit}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex-shrink-0"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shrink-0"
             >
               <FiSearch size={20} />
             </button>
