@@ -20,7 +20,7 @@ export default function Navbar() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const { isLoggedIn, user, logout } = useAuthStore();
-  const { items: cartItems } = useCartStore();
+  const { items: cartItems, superCoins } = useCartStore();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -119,8 +119,8 @@ export default function Navbar() {
                         <button className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
                           🎫 Coupons
                         </button>
-                        <button className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
-                          💰 Supercoin
+                        <button className="block w-full text-left py-2 px-3 hover:bg-yellow-50 rounded text-sm text-yellow-600 font-semibold border-y border-yellow-200">
+                          💰 SuperCoins: ₹{superCoins || 0}
                         </button>
                         <button className="block w-full text-left py-2 px-3 hover:bg-gray-100 rounded text-sm text-gray-700">
                           ⭐ Flipcart Plus Zone
@@ -203,6 +203,14 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
+
+              {/* SuperCoins Display */}
+              {isLoggedIn && (superCoins || 0) > 0 && (
+                <div className="hidden md:flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-200">
+                  <span className="text-sm font-semibold text-yellow-600">💰</span>
+                  <span className="text-xs font-bold text-yellow-700">₹{superCoins}</span>
+                </div>
+              )}
 
               {/* Cart */}
               <Link
@@ -292,6 +300,9 @@ export default function Navbar() {
                   <FiHeart className="inline mr-2" size={16} />
                   Wishlist
                 </Link>
+                <div className="flex items-center gap-2 py-2 px-2 bg-yellow-50 rounded border border-yellow-200">
+                  <span className="text-sm font-semibold text-yellow-600">💰 SuperCoins: ₹{superCoins || 0}</span>
+                </div>
                 <button
                   onClick={handleLogout}
                   className="block w-full text-left text-sm text-red-600 hover:text-red-700 py-2 font-semibold border-t border-gray-200 pt-3"

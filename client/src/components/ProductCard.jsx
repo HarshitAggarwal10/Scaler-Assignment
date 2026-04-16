@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { FiHeart, FiShoppingCart } from 'react-icons/fi';
 import useCartStore from '../stores/cartStore';
 import useWishlistStore from '../stores/wishlistStore';
+import { showToast } from '../utils/toast';
 
 export default function ProductCard({ product }) {
   const { addToCart } = useCartStore();
@@ -17,14 +18,17 @@ export default function ProductCard({ product }) {
   const handleAddToCart = (e) => {
     e.preventDefault();
     addToCart({ id: productId, ...product }, 1);
+    showToast.success(`${productName} added to cart!`);
   };
 
   const handleWishlist = (e) => {
     e.preventDefault();
     if (isInWishlist) {
       removeFromWishlist(productId);
+      showToast.info(`${productName} removed from wishlist`);
     } else {
       addToWishlist({ id: productId, ...product });
+      showToast.success(`${productName} added to wishlist!`);
     }
   };
 

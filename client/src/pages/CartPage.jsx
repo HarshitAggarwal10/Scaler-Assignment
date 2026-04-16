@@ -1,9 +1,15 @@
 import { Link, useNavigate } from 'react-router-dom';
 import useCartStore from '../stores/cartStore';
+import { showToast } from '../utils/toast';
 
 export default function CartPage() {
   const { items, totalPrice, removeFromCart, updateQuantity, clearCart } = useCartStore();
   const navigate = useNavigate();
+
+  const handleRemoveItem = (itemId, itemName) => {
+    removeFromCart(itemId);
+    showToast.info(`${itemName} removed from cart`);
+  };
 
   if (items.length === 0) {
     return (
@@ -78,7 +84,7 @@ export default function CartPage() {
                       ₹{item.price * item.quantity}
                     </p>
                     <button
-                      onClick={() => removeFromCart(item.id)}
+                      onClick={() => handleRemoveItem(item.id, item.title)}
                       className="text-red-500 hover:text-red-700 font-semibold text-sm"
                     >
                       Remove
