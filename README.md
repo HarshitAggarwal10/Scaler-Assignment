@@ -34,7 +34,7 @@
 
 ## Project Overview
 
-**FlipCart** is a comprehensive, production-grade e-commerce application that demonstrates modern full-stack web development practices. Built with React, Node.js, Express, and MongoDB, the platform provides a seamless shopping experience with advanced features including product discovery, shopping cart management, order processing, wishlist functionality, and user authentication.
+**FlipKart** is a comprehensive, production-grade e-commerce application that demonstrates modern full-stack web development practices. Built with React, Node.js, Express, and PostgreSQL, the platform provides a seamless shopping experience with advanced features including product discovery, shopping cart management, order processing, wishlist functionality, and user authentication.
 
 ### Key Objectives:
 - ✅ Implement a responsive, user-friendly e-commerce interface
@@ -151,8 +151,8 @@
 |-----------|---------|---------|
 | Node.js | 16+ | JavaScript runtime |
 | Express.js | 4.x | Web application framework |
-| MongoDB | Atlas | NoSQL database |
-| Mongoose | Latest | MongoDB ODM |
+| PostgreSQL | 12+ | Relational database |
+| Sequelize | Latest | ORM for PostgreSQL |
 | JWT | Latest | Token-based authentication |
 | bcryptjs | Latest | Password hashing |
 | Nodemailer | Latest | Email service |
@@ -169,7 +169,7 @@
 | Eslint | Code linting |
 | Prettier | Code formatting |
 | Postman | API testing |
-| MongoDB Compass | Database visualization |
+| pgAdmin | Database visualization |
 
 ---
 
@@ -196,13 +196,13 @@
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 └────────────────────────────────────────────────────────────┬┘
                            │
-                    Mongoose ODM
+                    Sequelize ORM
                            │
 ┌────────────────────────────────────────────────────────────┬┘
-│              DATABASE LAYER (MongoDB Atlas)                 │
+│              DATABASE LAYER (PostgreSQL)                    │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
 │  │ Users    │  │ Products │  │ Orders   │  │ Carts    │   │
-│  │Collection│  │Collection│  │Collection│  │Collection│   │
+│  │ Table    │  │ Table    │  │ Table    │  │ Table    │   │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
 └──────────────────────────────────────────────────────────────┘
 ```
@@ -216,7 +216,7 @@
 - **RAM**: Minimum 4GB (8GB recommended)
 - **Storage**: At least 2GB free disk space
 - **OS**: Windows 10+, macOS 10.12+, or Linux (Ubuntu 18.04+)
-- **Internet**: Required for npm package downloads and MongoDB Atlas
+- **Internet**: Required for npm package downloads and PostgreSQL setup
 
 ### Software Requirements
 
@@ -226,10 +226,10 @@
 - **Git**: Latest version ([Download](https://git-scm.com/))
 
 #### External Services
-- **MongoDB Atlas Account**: Free tier available ([Sign Up](https://www.mongodb.com/cloud/atlas))
-  - Create a free cluster
-  - Configure database user credentials
-  - Allowlist IP (or use 0.0.0.0/0 for development)
+- **PostgreSQL Database**: Local instance or cloud hosting
+  - Install PostgreSQL 12 or higher ([Download](https://www.postgresql.org/download/))
+  - Create a database user and credentials
+  - Configure connection settings
   
 - **Email Service** (Optional but recommended)
   - Gmail account with 2FA enabled
@@ -302,8 +302,11 @@ cp .env.example .env
 ### Step 4: Database Verification
 
 ```bash
-# Test MongoDB connection (from server directory)
+# Test PostgreSQL connection (from server directory)
 cd server
+
+# Run migrations to create tables
+npm run migrate
 
 # Run seed script to populate database
 npm run seed
@@ -311,8 +314,8 @@ npm run seed
 
 Expected output:
 ```
-✅ PostgreSQL Connected
-✓ Database synced
+✅ PostgreSQL Connected Successfully
+✓ Database migrated
 Cleared existing products
 ✅ Successfully seeded 195+ products!
 
@@ -337,7 +340,11 @@ NODE_ENV=development
 HOST=localhost
 
 # Database Configuration
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/flipcart-db?retryWrites=true&w=majority
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=flipcart-db
+DB_USER=postgres
+DB_PASSWORD=your_secure_password
 
 # JWT Authentication
 JWT_SECRET=your_very_secure_random_jwt_secret_key_min_32_chars_12345
@@ -417,7 +424,7 @@ Expected output:
 ```
 [nodemon] watching extension: js,json
 Server running on port 5000
-✅ MongoDB Connected Successfully
+✅ PostgreSQL Connected Successfully
 Ready to accept requests
 ```
 
@@ -439,8 +446,8 @@ Expected output:
 #### Terminal 3: Monitor Database (Optional)
 
 ```bash
-# Open MongoDB Compass or use web console
-# Connection string: mongodb+srv://username:password@cluster.mongodb.net/
+# Open pgAdmin or use PostgreSQL CLI
+# Connection string: postgresql://username:password@localhost:5432/flipcart-db
 ```
 
 ### Access the Application
@@ -483,10 +490,10 @@ npm run seed
 
 ```bash
 # Export database
-mongodump --uri="mongodb+srv://username:password@cluster.mongodb.net/flipcart-db" --out=./backup
+pg_dump -U postgres -h localhost -d flipcart-db > ./backup/flipcart-db.sql
 
 # Import database
-mongorestore --uri="mongodb+srv://username:password@cluster.mongodb.net/flipcart-db" ./backup/flipcart-db
+psql -U postgres -h localhost -d flipcart-db < ./backup/flipcart-db.sql
 ```
 
 ### Database Indexes
@@ -494,68 +501,83 @@ mongorestore --uri="mongodb+srv://username:password@cluster.mongodb.net/flipcart
 Indexes are automatically created for:
 - `users.email` - Unique index
 - `products.category` - Query optimization
-- `orders.userId` - User order lookup
-- `carts.userId` - User cart lookup
+- `orders.user_id` - User order lookup
+- `carts.user_id` - User cart lookup
 
-### MongoDB Collections Schema
+### PostgreSQL Tables Schema
 
-#### Users Collection
-```javascript
-{
-  _id: ObjectId,
-  name: String,
-  email: String (unique),
-  password: String (hashed),
-  phone: String,
-  addresses: [{
-    addressLine1: String,
-    city: String,
-    state: String,
-    zipCode: String,
-    isDefault: Boolean
-  }],
-  createdAt: Date,
-  updatedAt: Date
-}
+#### Users Table
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_addresses (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  address_line1 VARCHAR(255),
+  city VARCHAR(100),
+  state VARCHAR(100),
+  zip_code VARCHAR(10),
+  is_default BOOLEAN DEFAULT false
+);
 ```
 
-#### Products Collection
-```javascript
-{
-  _id: ObjectId,
-  title: String,
-  description: String,
-  price: Number,
-  originalPrice: Number,
-  discount: Number,
-  images: [String],
-  category: String,
-  rating: Number,
-  stock: Number,
-  specifications: Object,
-  seller: String,
-  warranty: String,
-  deliveryTime: String
-}
+#### Products Table
+```sql
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  price DECIMAL(10, 2),
+  original_price DECIMAL(10, 2),
+  discount DECIMAL(5, 2),
+  category VARCHAR(100),
+  rating DECIMAL(3, 1),
+  stock INTEGER,
+  seller VARCHAR(255),
+  warranty VARCHAR(100),
+  delivery_time VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
-#### Orders Collection
-```javascript
-{
-  _id: ObjectId,
-  userId: ObjectId (ref: User),
-  items: [{
-    productId: ObjectId,
-    quantity: Number,
-    price: Number
-  }],
-  totalPrice: Number,
-  status: String,
-  shippingAddress: Object,
-  paymentMethod: String,
-  createdAt: Date,
-  updatedAt: Date
-}
+#### Orders Table
+```sql
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  total_price DECIMAL(10, 2),
+  status VARCHAR(50),
+  payment_method VARCHAR(50),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER REFERENCES orders(id),
+  product_id INTEGER REFERENCES products(id),
+  quantity INTEGER,
+  price DECIMAL(10, 2)
+);
+
+CREATE TABLE carts (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  product_id INTEGER REFERENCES products(id),
+  quantity INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 ```
 
 ---
@@ -734,7 +756,7 @@ flipcart/
 │   │   │   ├── order.js                # Order endpoints
 │   │   │   └── wishlist.js             # Wishlist endpoints
 │   │   │
-│   │   ├── models/                     # Mongoose Schemas
+│   │   ├── models/                     # Sequelize Models
 │   │   │   ├── User.js
 │   │   │   ├── Product.js
 │   │   │   ├── Cart.js
@@ -748,7 +770,7 @@ flipcart/
 │   │   │   └── validation.js           # Input validation
 │   │   │
 │   │   ├── config/
-│   │   │   └── database.js             # MongoDB connection
+│   │   │   └── database.js             # PostgreSQL connection
 │   │   │
 │   │   ├── utils/
 │   │   │   └── emailService.js         # Email notifications
@@ -890,7 +912,12 @@ Set these in deployment platform's environment settings:
 
 ```env
 NODE_ENV=production
-MONGODB_URI=your_production_mongodb_uri
+# PostgreSQL Production Configuration
+DB_HOST=prod-db-host
+DB_PORT=5432
+DB_NAME=flipcart-prod
+DB_USER=prod-user
+DB_PASSWORD=your_production_password
 JWT_SECRET=your_production_jwt_secret
 CORS_ORIGIN=https://yourdomain.com
 SMTP_EMAIL=production_email@gmail.com
@@ -955,15 +982,15 @@ Target metrics:
 
 ### Common Issues & Solutions
 
-#### MongoDB Connection Error
-```
-Error: MongoNetworkError: connect ECONNREFUSED
-```
+#### PostgreSQL Connection Error
+
+**Problem**: `Error: connect ECONNREFUSED` or `role "postgres" does not exist`
+
 **Solution:**
-- Check MongoDB URI is correct
-- Verify database credentials
-- Ensure IP is whitelisted in MongoDB Atlas
-- Check internet connection
+- Check PostgreSQL server is running (`pg_isready -h localhost`)
+- Verify database credentials in .env file
+- Ensure database exists (create with `createdb flipcart-db`)
+- Check network connectivity to DB host
 
 #### CORS Error
 ```
@@ -1076,7 +1103,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 ### Useful Resources
 - [React Documentation](https://react.dev/)
 - [Express.js Guide](https://expressjs.com/)
-- [MongoDB University](https://www.mongodb.com/university)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Tailwind CSS Docs](https://tailwindcss.com/docs)
 
 ---
@@ -1089,7 +1116,7 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 - [API_DOCS.md](./docs/API_DOCS.md) - Comprehensive API reference
 
 ### Learning Resources
-- [Full-Stack Web Development](https://www.mongodb.com/languages/javascript)
+- [Full-Stack Web Development with Node.js & Express](https://expressjs.com/)
 - [Express.js Best Practices](https://expressjs.com/en/advanced/best-practice-security.html)
 - [React Performance Optimization](https://react.dev/reference/react)
 
